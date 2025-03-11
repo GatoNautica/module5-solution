@@ -29,18 +29,29 @@ $(function () {
     return string.replace(new RegExp("{{" + propName + "}}", "g"), propValue);
   }
 
-function buildAndShowHomeHTML(categories) {
-  $ajaxUtils.sendGetRequest(homeHtmlUrl, function (homeHtml) {
-    var chosenCategory = chooseRandomCategory(categories);
-    if (chosenCategory) {
-      var chosenCategoryShortName = chosenCategory.short_name;
-      var homeHtmlToInsert = insertProperty(homeHtml, "randomCategoryShortName", chosenCategoryShortName);
-      insertHtml("#main-content", homeHtmlToInsert);
-    } else {
-      console.error("No se pudo seleccionar una categoría aleatoria.");
-    }
-  }, false);
-}
+  // Función switchMenuToActive agregada
+  function switchMenuToActive() {
+    document.querySelector("#navHomeButton").classList.remove("active");
+    document.querySelector("#navMenuButton").classList.add("active");
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    showLoading("#main-content");
+    $ajaxUtils.sendGetRequest(allCategoriesUrl, buildAndShowHomeHTML, true);
+  });
+
+  function buildAndShowHomeHTML(categories) {
+    $ajaxUtils.sendGetRequest(homeHtmlUrl, function (homeHtml) {
+      var chosenCategory = chooseRandomCategory(categories);
+      if (chosenCategory) {
+        var chosenCategoryShortName = chosenCategory.short_name;
+        var homeHtmlToInsert = insertProperty(homeHtml, "randomCategoryShortName", chosenCategoryShortName);
+        insertHtml("#main-content", homeHtmlToInsert);
+      } else {
+        console.error("No se pudo seleccionar una categoría aleatoria.");
+      }
+    }, false);
+  }
 
   function chooseRandomCategory(categories) {
     return categories && categories.length ? categories[Math.floor(Math.random() * categories.length)] : null;
@@ -59,7 +70,7 @@ function buildAndShowHomeHTML(categories) {
   function buildAndShowCategoriesHTML(categories) {
     $ajaxUtils.sendGetRequest(categoriesTitleHtml, function (categoriesTitleHtml) {
       $ajaxUtils.sendGetRequest(categoryHtml, function (categoryHtml) {
-        switchMenuToActive();
+        switchMenuToActive(); // Llamada a switchMenuToActive
         var categoriesViewHtml = buildCategoriesViewHtml(categories, categoriesTitleHtml, categoryHtml);
         insertHtml("#main-content", categoriesViewHtml);
       }, false);
@@ -81,7 +92,7 @@ function buildAndShowHomeHTML(categories) {
   function buildAndShowMenuItemsHTML(categoryMenuItems) {
     $ajaxUtils.sendGetRequest(menuItemsTitleHtml, function (menuItemsTitleHtml) {
       $ajaxUtils.sendGetRequest(menuItemHtml, function (menuItemHtml) {
-        switchMenuToActive();
+        switchMenuToActive(); // Llamada a switchMenuToActive
         var menuItemsViewHtml = buildMenuItemsViewHtml(categoryMenuItems, menuItemsTitleHtml, menuItemHtml);
         insertHtml("#main-content", menuItemsViewHtml);
       }, false);
