@@ -29,26 +29,18 @@ $(function () {
     return string.replace(new RegExp("{{" + propName + "}}", "g"), propValue);
   }
 
-  function switchMenuToActive() {
-    document.querySelector("#navHomeButton").classList.remove("active");
-    document.querySelector("#navMenuButton").classList.add("active");
-  }
-
-  document.addEventListener("DOMContentLoaded", function () {
-    showLoading("#main-content");
-    $ajaxUtils.sendGetRequest(allCategoriesUrl, buildAndShowHomeHTML, true);
-  });
-
-  function buildAndShowHomeHTML(categories) {
-    $ajaxUtils.sendGetRequest(homeHtmlUrl, function (homeHtml) {
-      var chosenCategory = chooseRandomCategory(categories);
-      if (chosenCategory) {
-        var chosenCategoryShortName = chosenCategory.short_name;
-        var homeHtmlToInsert = insertProperty(homeHtml, "randomCategoryShortName", chosenCategoryShortName);
-        insertHtml("#main-content", homeHtmlToInsert);
-      }
-    }, false);
-  }
+function buildAndShowHomeHTML(categories) {
+  $ajaxUtils.sendGetRequest(homeHtmlUrl, function (homeHtml) {
+    var chosenCategory = chooseRandomCategory(categories);
+    if (chosenCategory) {
+      var chosenCategoryShortName = chosenCategory.short_name;
+      var homeHtmlToInsert = insertProperty(homeHtml, "randomCategoryShortName", chosenCategoryShortName);
+      insertHtml("#main-content", homeHtmlToInsert);
+    } else {
+      console.error("No se pudo seleccionar una categoría aleatoria.");
+    }
+  }, false);
+}
 
   function chooseRandomCategory(categories) {
     return categories && categories.length ? categories[Math.floor(Math.random() * categories.length)] : null;
