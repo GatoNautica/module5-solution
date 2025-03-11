@@ -17,22 +17,22 @@ $(function () {
   var menuItemsTitleHtml = "snippets/menu-items-title.html";
   var menuItemHtml = "snippets/menu-item.html";
 
-  var insertHtml = function (selector, html) {
+  function insertHtml(selector, html) {
     document.querySelector(selector).innerHTML = html;
-  };
+  }
 
-  var showLoading = function (selector) {
+  function showLoading(selector) {
     insertHtml(selector, "<div class='text-center'><img src='images/ajax-loader.gif'></div>");
-  };
+  }
 
-  var insertProperty = function (string, propName, propValue) {
+  function insertProperty(string, propName, propValue) {
     return string.replace(new RegExp("{{" + propName + "}}", "g"), propValue);
-  };
+  }
 
-  var switchMenuToActive = function () {
+  function switchMenuToActive() {
     document.querySelector("#navHomeButton").classList.remove("active");
     document.querySelector("#navMenuButton").classList.add("active");
-  };
+  }
 
   document.addEventListener("DOMContentLoaded", function () {
     showLoading("#main-content");
@@ -41,14 +41,17 @@ $(function () {
 
   function buildAndShowHomeHTML(categories) {
     $ajaxUtils.sendGetRequest(homeHtmlUrl, function (homeHtml) {
-      var chosenCategoryShortName = "'" + chooseRandomCategory(categories).short_name + "'";
-      var homeHtmlToInsert = insertProperty(homeHtml, "randomCategoryShortName", chosenCategoryShortName);
-      insertHtml("#main-content", homeHtmlToInsert);
+      var chosenCategory = chooseRandomCategory(categories);
+      if (chosenCategory) {
+        var chosenCategoryShortName = chosenCategory.short_name;
+        var homeHtmlToInsert = insertProperty(homeHtml, "randomCategoryShortName", chosenCategoryShortName);
+        insertHtml("#main-content", homeHtmlToInsert);
+      }
     }, false);
   }
 
   function chooseRandomCategory(categories) {
-    return categories[Math.floor(Math.random() * categories.length)];
+    return categories && categories.length ? categories[Math.floor(Math.random() * categories.length)] : null;
   }
 
   dc.loadMenuCategories = function () {
@@ -73,11 +76,13 @@ $(function () {
 
   function buildCategoriesViewHtml(categories, categoriesTitleHtml, categoryHtml) {
     var finalHtml = categoriesTitleHtml + "<section class='row'>";
-    categories.forEach(category => {
-      var html = insertProperty(categoryHtml, "name", category.name);
-      html = insertProperty(html, "short_name", category.short_name);
-      finalHtml += html;
-    });
+    if (categories && categories.length) {
+      categories.forEach(function (category) {
+        var html = insertProperty(categoryHtml, "name", category.name);
+        html = insertProperty(html, "short_name", category.short_name);
+        finalHtml += html;
+      });
+    }
     return finalHtml + "</section>";
   }
 
@@ -92,17 +97,20 @@ $(function () {
   }
 
   function buildMenuItemsViewHtml(categoryMenuItems, menuItemsTitleHtml, menuItemHtml) {
-    menuItemsTitleHtml = insertProperty(menuItemsTitleHtml, "name", categoryMenuItems.category.name);
-    menuItemsTitleHtml = insertProperty(menuItemsTitleHtml, "special_instructions", categoryMenuItems.category.special_instructions);
+    if (!categoryMenuItems || !categoryMenuItems.category) return "";
+    menuItemsTitleHtml = insertProperty(menuItemsTitleHtml, "name", categoryMenuItems.category.name || "");
+    menuItemsTitleHtml = insertProperty(menuItemsTitleHtml, "special_instructions", categoryMenuItems.category.special_instructions || "");
     var finalHtml = menuItemsTitleHtml + "<section class='row'>";
-    categoryMenuItems.menu_items.forEach(item => {
-      var html = insertProperty(menuItemHtml, "short_name", item.short_name);
-      html = insertProperty(html, "name", item.name);
-      html = insertProperty(html, "description", item.description);
-      finalHtml += html;
-    });
+    if (categoryMenuItems.menu_items && categoryMenuItems.menu_items.length) {
+      categoryMenuItems.menu_items.forEach(function (item) {
+        var html = insertProperty(menuItemHtml, "short_name", item.short_name || "");
+        html = insertProperty(html, "name", item.name || "");
+        html = insertProperty(html, "description", item.description || "");
+        finalHtml += html;
+      });
+    }
     return finalHtml + "</section>";
   }
 
-  global.$dc = dc;
+  window.$dc = dc;
 })(window);
